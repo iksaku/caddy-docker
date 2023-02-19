@@ -1,0 +1,27 @@
+name: Builder
+
+on:
+  push:
+    paths:
+      - 'Dockerfile'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          push: ${{ github.ref == 'refs/heads/main' }}
+          tags: ghcr.io/iksaku/caddy-docker:latest
