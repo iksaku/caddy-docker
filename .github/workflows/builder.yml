@@ -34,12 +34,14 @@ jobs:
         with:
           repository: caddyserver/caddy
           excludes: prerelease, draft
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: 'Fetch latest Caddy-Docker Proxy release'
         id: proxy
         uses: pozetroninc/github-action-get-latest-release@master
         with:
           repository: lucaslorentz/caddy-docker-proxy
           excludes: prerelease, draft
+          token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: 'Compare versions'
         id: version
