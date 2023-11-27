@@ -47,13 +47,14 @@ jobs:
         id: version
         run: |
           echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
-        
+          echo "CADDY_VERSION=${{ steps.caddy.outputs.release }}" | sed -r 's/=v/=/' >> $GITHUB_ENV
+          echo "CADDY_DOCKER_PROXY_VERSION=${{ steps.proxy.outputs.release }}" | sed -r 's/=v/=/' >> $GITHUB_ENV
+
           if [ "${{ steps.current-caddy.outputs.value }}" == "${{ steps.caddy.outputs.release }}" ]; then
             echo "Caddy is up to date: ${{ steps.caddy.outputs.release }}"
           else
             echo "A new Caddy version is available: ${{ steps.caddy.outputs.release }}"
             echo "Currently using: ${{ steps.current-caddy.outputs.value }}"
-            echo "CADDY_VERSION=${{ steps.caddy.outputs.release }}" | sed -r 's/=v/=/' >> $GITHUB_ENV
             echo "UP_TO_DATE=false" >> $GITHUB_ENV
           fi
 
@@ -62,12 +63,11 @@ jobs:
           else
             echo "A new Caddy-Docker Proxy version is available: ${{ steps.proxy.outputs.release }}"
             echo "Currently using: ${{ steps.current-proxy.outputs.value }}"
-            echo "CADDY_DOCKER_PROXY_VERSION=${{ steps.proxy.outputs.release }}" | sed -r 's/=v/=/' >> $GITHUB_ENV
             echo "UP_TO_DATE=false" >> $GITHUB_ENV
           fi
       
       - name: Login to GitHub Container Registry
-        if: ${{ github.event_name != 'scheduled' || env.UP_TO_DATE == 'false' }}
+        if: ${{ github.event_name != 'schedule' || env.UP_TO_DATE == 'false' }}
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
@@ -75,7 +75,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Build and push
-        if: ${{ github.event_name != 'scheduled' || env.UP_TO_DATE == 'false' }}
+        if: ${{ github.event_name != 'schedule' || env.UP_TO_DATE == 'false' }}
         uses: docker/build-push-action@v5
         with:
           build-args: |
